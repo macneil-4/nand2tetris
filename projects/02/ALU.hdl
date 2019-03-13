@@ -42,5 +42,16 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    //Section one: create logic circuit to manipulate a 16-bit input according to the nx and zx control bits.
+    Mux16 (a=x[0..15], b[0..15]=false, sel=zx, out=xZX); //zero x if zx==1 else return x
+    
+    // if nx==1 return notX (16), else return x after zx operation
+    Not16 (in=xZX, out=notX);
+    Mux16 (a=xZX, b=notX, sel=nx, out=xNX);
+
+    Mux16 (a=y[0..15], b[0..15]=false, sel=zy, out=yZY); //zero y if zy==1 else return y
+        
+    // if ny==1 return notY (16), else return y after zy operation
+    Not16 (in=yZY, out=notY);
+    Mux16 (a=yZY, b=notY, sel=ny, out=yNY);
 }
