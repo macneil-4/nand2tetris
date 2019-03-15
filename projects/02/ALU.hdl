@@ -43,15 +43,38 @@ CHIP ALU {
 
     PARTS:
     //Section one: create logic circuit to manipulate a 16-bit input according to the nx and zx control bits.
-    Mux16 (a=x[0..15], b[0..15]=false, sel=zx, out=xZX); //zero x if zx==1 else return x
+    Mux16 (a=x[0..15], b[0..15]=false, sel=zx, out=zeroX); //zero x if zx==1 else return x
     
     // if nx==1 return notX (16), else return x after zx operation
-    Not16 (in=xZX, out=notX);
-    Mux16 (a=xZX, b=notX, sel=nx, out=xNX);
+    Not16 (in=zeroX, out=notX);
 
-    Mux16 (a=y[0..15], b[0..15]=false, sel=zy, out=yZY); //zero y if zy==1 else return y
+    // use notX if nx==1, otherwise use result of zeroX
+    Mux16 (a=zeroX, b=notX, sel=nx, out=xSelection);
+
+    //zero y if zy==1 else return y
+    Mux16 (a=y[0..15], b[0..15]=false, sel=zy, out=zeroY); 
         
     // if ny==1 return notY (16), else return y after zy operation
-    Not16 (in=yZY, out=notY);
-    Mux16 (a=yZY, b=notY, sel=ny, out=yNY);
+    Not16 (in=zeroY, out=notY);
+
+    // use notY if ny==1, otherwise use result of zeroY
+    Mux16 (a=zeroY, b=notY, sel=ny, out=ySelection);
+
+    /* if f then
+        out=x+y
+        else
+        out=x&y
+    */
+    // if f==1 then out = x+y
+    Add16(a=xSelection, b=ySelection, out=xPlusY);
+
+    // if f == 0 then out = x&y
+    And16(a=xSelection, b=ySelection, out=xAndY);
+
+
+    Mux16(a=xAndY, b=xPlusY, sel=f, out=fResult);
+
+    //
+    Not16(in=fResult, out=notFResult);
+    Mux16(a=fResult, b=notFResult, sel=no, out=out);
 }
