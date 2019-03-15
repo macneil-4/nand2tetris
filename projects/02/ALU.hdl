@@ -76,5 +76,15 @@ CHIP ALU {
 
     //
     Not16(in=fResult, out=notFResult);
-    Mux16(a=fResult, b=notFResult, sel=no, out=out);
+    Mux16(a=fResult, b=notFResult, sel=no, out[0..7]=outZRTest1, out[8..15]=outZRTest2, out[15]=outNGTest, out=out);
+    //And16(a=outTemp, b=outTemp, out=out);
+
+    // zr, // 1 if (out == 0), 0 otherwise
+    Or8Way(in=outZRTest1, out=zrFirstHalf);
+    Or8Way(in=outZRTest2, out=zrSecondHalf);
+    Or(a=zrFirstHalf, b=zrSecondHalf, out=zrTest);
+    Not(in=zrTest, out=zr);
+
+    // ng; // 1 if (out < 0),  0 otherwise
+    And(a=outNGTest, b=true, out=ng);
 }
